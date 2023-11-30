@@ -1,0 +1,24 @@
+#include <iostream>
+using namespace std;
+#ifndef GASTOS_H
+#define GASTOS_H
+
+class Gastos {
+public:
+  Gastos(string, float, int);
+
+  string get_nombre();
+  float get_cantidad();
+  int get_index();
+
+  void set_nombre(string);
+  void set_cantidad(float);
+  void set_index(int);
+
+private:
+  string nombre;
+  float cantidad;
+  int index;
+};
+
+#endif
