@@ -1,0 +1,202 @@
+#include "gastos.h"
+#include <fstream>
+
+class Nodo {
+public:
+  Gastos dato;
+  Nodo *siguiente;
+  Nodo *anterior;
+
+  Nodo(const Gastos &gasto)
+      : dato(gasto), siguiente(nullptr), anterior(nullptr) {}
+};
+
+class ListaDoble {
+private:
+  Nodo *cabeza;
+
+public:
+  ListaDoble() : cabeza(nullptr) {}
+
+  void imprimirLista() const {
+    int index = 1;
+    Nodo *temp = cabeza;
+    if (!temp) {
+      cout << "No hay elementos en la lista. Prueba agregando uno." << endl;
+    }
+    while (temp) {
+      // Imprimir información del gasto
+      temp->dato.set_index(index);
+      cout << temp->dato.get_index() << "- "
+           << temp->dato.get_nombre() + " | Costo: $"
+           << temp->dato.get_cantidad() << endl;
+
+      index++;
+
+      temp = temp->siguiente;
+    }
+  }
+
+  float sumaTotal() const {
+    float sum = 0;
+    Nodo *temp = cabeza;
+    if (!temp) {
+      cout << "No hay elementos en la lista. Prueba agregando uno." << endl;
+    }
+    while (temp) {
+      // Imprimir información del gasto
+      sum = sum + temp->dato.get_cantidad();
+
+      temp = temp->siguiente;
+    }
+
+    return sum;
+  }
+
+  void agregarAlFinal(const Gastos &gasto) {
+    Nodo *nuevoNodo = new Nodo(gasto);
+    if (!cabeza) {
+      cabeza = nuevoNodo;
+    } else {
+      Nodo *temp = cabeza;
+      while (temp->siguiente) {
+        temp = temp->siguiente;
+      }
+      temp->siguiente = nuevoNodo;
+      nuevoNodo->anterior = temp;
+    }
+  }
+
+  // Buscar un gasto en la lista
+  Nodo *buscar(int index) const {
+    Nodo *temp = cabeza;
+    while (temp) {
+      if (temp->dato.get_index() == index) {
+        return temp;
+      }
+      temp = temp->siguiente;
+    }
+    return nullptr; // No se encontró el gasto
+  }
+
+  ListaDoble *crearListaRango(float min, float max) const {
+    ListaDoble *listaRangos = new ListaDoble();
+    Nodo *temp = cabeza;
+    while (temp) {
+      if (temp->dato.get_cantidad() >= min &&
+          temp->dato.get_cantidad() <= max) {
+        listaRangos->agregarAlFinal(temp->dato);
+      }
+      temp = temp->siguiente;
+    }
+    return listaRangos;
+  }
+
+  ListaDoble *crearListaHormiga() const {
+    ListaDoble *listaHormiga = new ListaDoble();
+    Nodo *temp = cabeza;
+    while (temp) {
+      if (temp->dato.get_cantidad() <= 100) {
+        listaHormiga->agregarAlFinal(temp->dato);
+      }
+      temp = temp->siguiente;
+    }
+    return listaHormiga;
+  }
+
+  // Eliminar un gasto de la lista
+  void eliminar(int index) {
+    Nodo *nodoAEliminar = buscar(index);
+    if (nodoAEliminar) {
+      if (nodoAEliminar->anterior) {
+        nodoAEliminar->anterior->siguiente = nodoAEliminar->siguiente;
+      } else {
+        cabeza = nodoAEliminar->siguiente;
+      }
+
+      if (nodoAEliminar->siguiente) {
+        nodoAEliminar->siguiente->anterior = nodoAEliminar->anterior;
+      }
+
+      delete nodoAEliminar;
+    }
+  }
+
+  void exportarLista(string nom_archivo) {
+    ofstream salida(nom_archivo);
+    Nodo *temp = cabeza;
+    if (!temp) {
+      cout << "No hay lista para exportar! Prueba agregando elementos." << endl;
+    }
+    if (salida.is_open()) {
+      while (temp != nullptr) {
+        salida << temp->dato.get_nombre() << "\n";
+        salida << temp->dato.get_cantidad() << "\n";
+        temp = temp->siguiente;
+      }
+      salida.close();
+      cout << "Los datos se han exportado correctamente" << endl;
+    } else {
+      cout << "Error al abrir el archivo " << nom_archivo << endl;
+    }
+  }
+
+  void quicksort() { cabeza = quicksortRecursivo(cabeza); }
+
+private:
+  // Función auxiliar para implementar el QuickSort de forma recursiva
+  Nodo *quicksortRecursivo(Nodo *inicio) {
+    if (!inicio || !inicio->siguiente) {
+      return inicio;
+    }
+
+    // Elegir un pivote
+    Nodo *pivote = inicio;
+    inicio = inicio->siguiente;
+
+    // Dividir la lista en dos
+    Nodo *menorQuePivote = nullptr;
+    Nodo *mayorQuePivote = nullptr;
+
+    while (inicio) {
+      Nodo *siguiente = inicio->siguiente;
+      if (inicio->dato.get_cantidad() < pivote->dato.get_cantidad()) {
+        inicio->siguiente = menorQuePivote;
+        inicio->anterior = nullptr;
+        if (menorQuePivote) {
+          menorQuePivote->anterior = inicio;
+        }
+        menorQuePivote = inicio;
+      } else {
+        inicio->siguiente = mayorQuePivote;
+        inicio->anterior = nullptr;
+        if (mayorQuePivote) {
+          mayorQuePivote->anterior = inicio;
+        }
+        mayorQuePivote = inicio;
+      }
+      inicio = siguiente;
+    }
+
+    // Recursivamente ordenar las sublistas
+    menorQuePivote = quicksortRecursivo(menorQuePivote);
+    mayorQuePivote = quicksortRecursivo(mayorQuePivote);
+
+    // Concatenar las sublistas y el pivote
+    if (menorQuePivote) {
+      Nodo *finMenorQuePivote = menorQuePivote;
+      while (finMenorQuePivote->siguiente) {
+        finMenorQuePivote = finMenorQuePivote->siguiente;
+      }
+      finMenorQuePivote->siguiente = pivote;
+      pivote->anterior = finMenorQuePivote;
+    }
+
+    pivote->siguiente = mayorQuePivote;
+    if (mayorQuePivote) {
+      mayorQuePivote->anterior = pivote;
+    }
+
+    return menorQuePivote ? menorQuePivote : pivote;
+  }
+};
