@@ -1,0 +1,21 @@
+#include "gastos.h"
+#include <iostream>
+using namespace std;
+
+Gastos::Gastos(string _nombre, float _cantidad, int _index) {
+  nombre = _nombre;
+  cantidad = _cantidad;
+  index = _index;
+}
+
+string Gastos::get_nombre() { return nombre; }
+
+float Gastos::get_cantidad() { return cantidad; }
+
+int Gastos::get_index() { return index; }
+
+void Gastos::set_nombre(string _nombre) { nombre = _nombre; }
+
+void Gastos::set_cantidad(float _cantidad) { cantidad = _cantidad; }
+
+void Gastos::set_index(int _index) { index = _index; }
