@@ -1,0 +1,225 @@
+#include "gastos.h"
+#include "lista_doble.cpp"
+
+#include <fstream>
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <vector>
+using namespace std;
+
+// Declaracion de funciones
+void imprimirMenu();
+ListaDoble agregarGasto(ListaDoble);
+ListaDoble borrarGasto(ListaDoble);
+void mostrarGastosLista(ListaDoble);
+ListaDoble importarGastos();
+void exportarGastos(string);
+void separador();
+void seleccionUsuario(int);
+void menuAnalisis(ListaDoble);
+
+int main() {
+  cout << "Bienvenido a GastOS, a continuación teclea el numero de la opcion "
+          "deseada: "
+       << endl;
+  imprimirMenu();
+}
+
+ListaDoble agregarGasto(ListaDoble lista) {
+  float gasto = 0;
+  string nom_gasto;
+  Gastos temp("", 0.0, 0);
+
+  cout << "A continuación, introduce la cantidad del gasto: ";
+  cin >> gasto;
+  cout << "Cual fue el nombre del gasto?: ";
+  cin >> nom_gasto;
+
+  temp.set_nombre(nom_gasto);
+  temp.set_cantidad(gasto);
+
+  lista.agregarAlFinal(temp);
+  lista.quicksort();
+  return lista;
+}
+
+ListaDoble borrarGasto(ListaDoble lista) {
+  int index_gasto;
+  lista.imprimirLista();
+  cout << "A continuación, introduce el indice del gasto que quieres borrar: ";
+  cin >> index_gasto;
+  lista.eliminar(index_gasto);
+  lista.quicksort();
+  return lista;
+}
+
+void mostrarGastosLista(ListaDoble lista) { lista.imprimirLista(); }
+
+void separador() {
+  cout << "-------------------------------------------" << endl;
+  cout << "-------------------------------------------" << endl;
+}
+
+ListaDoble importarGastos() {
+  string line;
+  string nom_archivo;
+  int cont_lineas = 0;
+  Gastos temp("", 0.0, 0);
+  ListaDoble lista_gastos;
+  cout << "Introduce el nombre del archivo: ";
+  cin >> nom_archivo;
+  ifstream archivo_entrada(nom_archivo + ".txt");
+  if (archivo_entrada.is_open()) {
+    while (getline(archivo_entrada, line)) {
+      if (cont_lineas == 0) {
+        temp.set_nombre(line);
+        cont_lineas++;
+      } else {
+        temp.set_cantidad(stof(line));
+        lista_gastos.agregarAlFinal(temp);
+        cont_lineas = 0;
+      }
+    }
+    archivo_entrada.close();
+    separador();
+    cout << "Estos son los gastos que importaste: " << endl;
+    lista_gastos.quicksort();
+    lista_gastos.imprimirLista();
+    return lista_gastos;
+  } else {
+    cout << "Archivo no encontrado. Escribiste bien el nombre?\n";
+    return lista_gastos;
+  }
+}
+
+void imprimirMenu() {
+  // Declaracion variables booleanas
+  bool pasoPantallaInicial = false;
+
+  // Declaracion variables enteros
+  int rUsuario = 0;
+  int rUsuario2 = 0;
+
+  // Declaracion de la DLL
+  ListaDoble lista_gastos;
+
+  // Bucle para no salir del menú inicial hasta que se seleccione una opcion
+  // disponible
+  while (!pasoPantallaInicial) {
+
+    // Imprimir las opciones disponibles
+    cout << "1. Importar lista de gastos" << endl;
+    cout << "2. Crear lista de gastos nueva" << endl;
+    cout << "Introduce la opcion deseada: ";
+    cin >> rUsuario;
+
+    // Verificar la respuesta del usuario
+    if (rUsuario == 1) {
+      // cout << "Has seleccionado Importar lista de gastos" << endl;
+      lista_gastos = importarGastos();
+      pasoPantallaInicial = true;
+    } else if (rUsuario == 2) {
+      // cout << "Has seleccionado Crear lista de gastos nueva" << endl;
+      pasoPantallaInicial = true;
+    } else {
+      cout << "Opcion no disponible, vuelve a intentarlo" << endl;
+    }
+  }
+
+  // Impresion del menu principal
+  while (true) {
+    separador();
+    cout << "1. Agregar gasto" << endl;
+    cout << "2. Borrar gasto" << endl;
+    cout << "3. Ver gastos" << endl;
+    cout << "4. Exportar lista de gastos" << endl;
+    cout << "5. Menu de analisis de datos" << endl;
+    cout << "6. Salir" << endl;
+    cout << "Introduce la opcion deseada: ";
+    cin >> rUsuario;
+
+    // Verificar la respuesta del usuario | se puede cambiar por switch
+    if (rUsuario == 1) {
+      // cout << "Has seleccionado Agregar gasto" << endl;
+      separador();
+      lista_gastos = agregarGasto(lista_gastos);
+
+    } else if (rUsuario == 2) {
+      // cout << "Has seleccionado Borrar gasto" << endl;
+      separador();
+      lista_gastos = borrarGasto(lista_gastos);
+
+    } else if (rUsuario == 3) {
+      // cout << "Has seleccionado Ver gastos" << endl;
+      separador();
+      mostrarGastosLista(lista_gastos);
+    } else if (rUsuario == 4) {
+      separador();
+      // cout << "Has seleccionado Exportar lista de gastos" << endl;
+      string nom_archivo;
+      cout << "Como deseas que se llame el archivo de los datos exportados?: ";
+      cin >> nom_archivo;
+      lista_gastos.exportarLista(nom_archivo + ".txt");
+    } else if (rUsuario == 5) {
+      separador();
+      menuAnalisis(lista_gastos);
+    } else if (rUsuario == 6) {
+      cout << "Saliendo del programa..." << endl;
+      exit(1);
+    } else {
+      cout << "Opcion no disponible, vuelve a intentarlo" << endl;
+    }
+  }
+}
+
+void menuAnalisis(ListaDoble lista) {
+
+  int rUsuario2 = 0;
+
+  float min = 0;
+  float max = 0;
+
+  ListaDoble* listaRangos;
+  ListaDoble* listaHormiga;
+
+  cout << "Bienvenido al menu de analisis de gastos" << endl;
+  cout << "En este menu tendras opciones para conocer más a fondo tus gastos y "
+          "poder manejarlos mejor"
+       << endl;
+
+  cout << "1. Conocer tus gastos de cierto rango" << endl;
+  cout << "2. Conocer tus gastos hormiga" << endl;
+  cout << "3. Suma total de tus gastos" << endl;
+
+  while (rUsuario2 != 1 && rUsuario2 != 2 && rUsuario2 != 3) {
+    cout << "Elige la opcion deseada: ";
+    cin >> rUsuario2;
+
+    if (rUsuario2 != 1 && rUsuario2 != 2 && rUsuario2 != 3) {
+      cout << "Opcion no disponible, vuelve a intentarlo" << endl;
+    }
+  }
+
+  if (rUsuario2 == 1) {
+    cout << "Introduce el costo minimo: ";
+    cin >> min;
+    max = min - 1;
+    while (max < min) {
+      cout << "Introduce el costo maximo: ";
+      cin >> max;
+    }
+    listaRangos = lista.crearListaRango(min, max);
+    separador();
+    cout << "Los gastos que estan dentro del rango definido son: " << endl;
+    listaRangos->imprimirLista();
+  } else if (rUsuario2 == 2) {
+    listaHormiga = lista.crearListaHormiga();
+    separador();
+    cout << "Tus gastos hormiga (menores a $100) son: " << endl;
+    listaHormiga->imprimirLista();
+  } else if (rUsuario2 == 3){
+    separador();
+    cout << "La suma total de tus gastos es de $" << lista.sumaTotal() << endl;
+  }
+}
